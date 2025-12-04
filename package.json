@@ -1,7 +1,7 @@
 {
   "name": "jongerenwerk-meerwaarde-app",
-  "main": "expo-router/entry",
   "version": "1.0.0",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-picker/picker": "2.11.1",
-    "@react-navigation/bottom-tabs": "^7.4.8",
+    "@react-navigation/bottom-tabs": "^7.8.11",
     "@react-navigation/elements": "^2.6.3",
-    "@react-navigation/native": "^7.1.18",
+    "@react-navigation/native": "^7.1.24",
     "@shopify/react-native-skia": "2.2.12",
     "@supabase/supabase-js": "^2.81.1",
     "base64-arraybuffer": "^1.0.2",
@@ -49,7 +49,7 @@
     "pdf-lib": "^1.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-native": "0.81.4",
+    "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-maps": "1.20.1",
     "react-native-pager-view": "6.9.1",
@@ -72,6 +72,14 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@react-navigation/native",
+        "@react-navigation/bottom-tabs"
+      ]
+    }
   },
   "private": true
 }
