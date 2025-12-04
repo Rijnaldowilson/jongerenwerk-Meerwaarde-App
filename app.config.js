@@ -1,15 +1,15 @@
 // app.config.js
 export default {
   expo: {
-    name: "MeerWaarde Jongerenwerk", // naam zoals zichtbaar op telefoon
+    name: "MeerWaarde Jongerenwerk",
     slug: "meerwaarde-jongerenwerk",
-    scheme: "meerwaarde", // voor deep linking, mag je zo laten
+    scheme: "meerwaarde",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png", // zorg dat deze bestaat
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png", // mag ook iets simpels zijn
+      image: "./assets/splash.png",
       resizeMode: "contain",
       backgroundColor: "#FFFFFF",
     },
@@ -18,10 +18,12 @@ export default {
       fallbackToCacheTimeout: 0,
     },
     assetBundlePatterns: ["**/*"],
+
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "nl.meerwaarde.jongerenwerk", // 1x kiezen en zo laten
+      bundleIdentifier: "nl.meerwaarde.jongerenwerk",
     },
+
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
@@ -29,16 +31,16 @@ export default {
       },
       package: "nl.meerwaarde.jongerenwerk",
     },
+
     web: {
       favicon: "./assets/favicon.png",
     },
+
     extra: {
-      eas: {
-        projectId: "REPLACE-ME-WITH-EAS-PROJECT-ID",
-      },
-      SUPABASE_URL: "https://JOUW-PROJECT.supabase.co",
-      SUPABASE_ANON_KEY: "JOUW_SUPABASE_ANON_KEY",
       ENV: "production",
+      eas: {
+        projectId: "3b4c2ea8-dce0-4c0c-a325-5beb035cf06f",
+      },
     },
   },
 };
