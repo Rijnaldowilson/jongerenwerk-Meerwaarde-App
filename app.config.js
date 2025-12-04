@@ -24,13 +24,14 @@ export default {
       bundleIdentifier: "nl.meerwaarde.jongerenwerk",
     },
 
-    android: {
-      adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#FFFFFF",
-      },
-      package: "nl.meerwaarde.jongerenwerk",
-    },
+   android: {
+  adaptiveIcon: {
+    foregroundImage: "./assets/icon.png",
+    backgroundColor: "#FFFFFF",
+  },
+  package: "nl.meerwaarde.jongerenwerk",
+},
+
 
     web: {
       favicon: "./assets/favicon.png",
