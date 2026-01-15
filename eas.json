@@ -6,10 +6,12 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.11.1"
     },
     "preview": {
       "distribution": "internal",
+      "node": "20.11.1",
       "android": {
         "buildType": "apk"
       },
@@ -19,7 +21,8 @@
     },
     "production": {
       "autoIncrement": true,
-      "distribution": "store"
+      "distribution": "store",
+      "node": "20.11.1"
     }
   },
   "submit": {
