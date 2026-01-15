@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Doorsturen…</title>
+  </head>
+  <body>
+    <p>Doorsturen naar de app…</p>
+
+    <script>
+      const APP_SCHEME = "meerwaarde:///auth/callback";
+
+      const search = window.location.search || "";
+      const hash = window.location.hash || "";
+
+      const hashAsQuery = hash.startsWith("#") ? hash.slice(1) : "";
+      const q1 = search.startsWith("?") ? search.slice(1) : "";
+      const combined = [q1, hashAsQuery].filter(Boolean).join("&");
+
+      const target = combined ? `${APP_SCHEME}?${combined}` : APP_SCHEME;
+
+      window.location.replace(target);
+      setTimeout(() => {
+        window.location.href = target;
+      }, 1200);
+    </script>
+  </body>
+</html>

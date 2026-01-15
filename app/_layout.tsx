@@ -5,11 +5,25 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "../auth/context";
 
 function isPublicRoute(pathname: string | null) {
-  if (!pathname) return false;
+  // ✅ Cruciaal: als pathname nog niet beschikbaar is, NIET redirecten
+  // Expo Router is dan nog aan het resolven van de deeplink route.
+  if (!pathname) return true;
 
-  const PUBLIC = ["/login", "/reset", "/register", "/register-jongere"];
+  const PUBLIC_PREFIXES = [
+    "/login",
+    "/reset",
+    "/register",
+    "/register-jongere",
 
-  return PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    // ✅ Supabase flows
+    "/auth/callback",
+    "/auth/new-password",
+
+    // ✅ Route-group fallback
+    "/(auth)",
+  ];
+
+  return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 }
 
 function Gate({ children }: { children: React.ReactNode }) {

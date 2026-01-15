@@ -1,6 +1,6 @@
 ﻿// app/(auth)/login.tsx
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -17,6 +17,7 @@ import {
 } from "react-native";
 
 import { Canvas, LinearGradient, Rect, vec } from "@shopify/react-native-skia";
+import * as ExpoLinking from "expo-linking";
 
 import { useAuth } from "../../auth/context";
 import { supabase } from "../../lib/supabase";
@@ -44,6 +45,37 @@ export default function Login() {
 
   const W = 360;
 
+  /* -------------------------------------------------
+   * 🔑 Deeplink opvang (Supabase recovery / invite)
+   * ------------------------------------------------- */
+  useEffect(() => {
+    const handle = (url: string | null) => {
+      if (!url) return;
+
+      console.log("DEEPLINK IN LOGIN:", url);
+
+      // ✅ Accepteer zowel oude als nieuwe vorm
+      // Oude (host=auth): meerwaarde://auth/callback  -> path wordt /callback
+      // Nieuwe (correct voor /auth/callback): meerwaarde:///auth/callback
+      const isCallback =
+        url.startsWith("meerwaarde:///auth/callback") ||
+        url.startsWith("meerwaarde://auth/callback") ||
+        url.startsWith("meerwaarde://callback"); // fallback die soms ontstaat door host parsing
+
+      if (isCallback) {
+        router.replace("/auth/callback");
+      }
+    };
+
+    ExpoLinking.getInitialURL().then(handle);
+
+    const sub = ExpoLinking.addEventListener("url", (event) => handle(event.url));
+    return () => sub.remove();
+  }, [router]);
+
+  /* -------------------------------------------------
+   * 🔐 Inloggen
+   * ------------------------------------------------- */
   const onSubmit = async () => {
     const mail = email.trim().toLowerCase();
     const pass = pw.trim();
@@ -75,36 +107,36 @@ export default function Login() {
     }
   };
 
+  /* -------------------------------------------------
+   * 🔁 Wachtwoord vergeten (Supabase recovery)
+   * ------------------------------------------------- */
   const onForgotPassword = async () => {
     const mail = email.trim().toLowerCase();
+
     if (!mail) {
-      Alert.alert(
-        "E-mailadres nodig",
-        "Vul eerst het e-mailadres in waarmee je geregistreerd bent."
-      );
+      Alert.alert("E-mailadres nodig", "Vul eerst het e-mailadres in waarmee je geregistreerd bent.");
       return;
     }
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(mail, {
-        // redirectTo kun je later nog invullen
+        redirectTo: "https://zippy-marzipan-841971.netlify.app",
       });
-      if (error) throw error;
 
-      Alert.alert(
-        "E-mail verzonden",
-        "Als dit e-mailadres bekend is, is er een herstelmail verstuurd."
-      );
-    } catch {
-      Alert.alert(
-        "Wachtwoord herstellen",
-        "Er ging iets mis bij het versturen. Probeer het later opnieuw."
-      );
+      if (error) {
+        console.log("RESET ERROR:", error);
+        Alert.alert("Reset mislukt", error.message);
+        return;
+      }
+
+      Alert.alert("E-mail verzonden", "Als dit e-mailadres bekend is, is er een herstelmail verstuurd.");
+    } catch (e: any) {
+      console.log("RESET EXCEPTION:", e);
+      Alert.alert("Fout", String(e?.message ?? e));
     }
   };
 
   const onRegisterJongere = () => {
-    // Route is /register-jongere (zonder (auth) in de URL)
     router.push("/register-jongere");
   };
 
@@ -138,15 +170,10 @@ export default function Login() {
         </Canvas>
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={{ padding: 16 }}>
-          {/* Logo */}
           <Image source={MW_LOGO} resizeMode="contain" style={styles.logo} />
 
-          {/* Login card */}
           <View style={styles.card}>
             <Text style={styles.label}>E-mail</Text>
             <TextInput
@@ -156,9 +183,6 @@ export default function Login() {
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
-              autoComplete="email"
-              textContentType="username"
-              inputMode="email"
               editable={!busy}
             />
 
@@ -166,78 +190,37 @@ export default function Login() {
             <TextInput
               value={pw}
               onChangeText={setPw}
-              placeholder=""
               secureTextEntry
               style={styles.input}
-              autoComplete="password"
-              textContentType="password"
               editable={!busy}
             />
 
-            {err ? <Text style={{ color: "#B91C1C", marginTop: 8 }}>{err}</Text> : null}
+            {err && <Text style={{ color: "#B91C1C", marginTop: 8 }}>{err}</Text>}
 
-            <TouchableOpacity
-              onPress={onSubmit}
-              activeOpacity={0.9}
-              style={[styles.btn, busy && { opacity: 0.7 }]}
-              disabled={busy}
-            >
+            <TouchableOpacity onPress={onSubmit} style={[styles.btn, busy && { opacity: 0.7 }]} disabled={busy}>
               <Text style={styles.btnTxt}>{busy ? "Bezig…" : "Inloggen"}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onForgotPassword} activeOpacity={0.8} disabled={busy}>
-              <Text style={[styles.forgotTxt, busy && { opacity: 0.5 }]}>
-                Wachtwoord vergeten?
-              </Text>
+            <TouchableOpacity onPress={onForgotPassword} disabled={busy}>
+              <Text style={styles.forgotTxt}>Wachtwoord vergeten?</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Jongeren-registratie */}
           <View style={{ marginTop: 18 }}>
-            <Text style={{ color: MW.sub, fontSize: 13, textAlign: "center", marginBottom: 6 }}>
-              Nog geen account als jongere?
-            </Text>
-            <TouchableOpacity
-              onPress={onRegisterJongere}
-              style={{
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: MW.blue,
-                paddingVertical: 10,
-                paddingHorizontal: 18,
-                alignSelf: "center",
-              }}
-              activeOpacity={0.9}
-              disabled={busy}
-            >
-              <Text style={{ color: MW.blue, fontWeight: "700", fontSize: 13 }}>
+            <Text style={{ color: MW.sub, fontSize: 13, textAlign: "center" }}>Nog geen account als jongere?</Text>
+            <TouchableOpacity onPress={onRegisterJongere}>
+              <Text style={{ color: MW.blue, fontWeight: "700", textAlign: "center" }}>
                 Maak een jongeren-account aan
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Info voor professionals */}
           <View style={{ marginTop: 16 }}>
             <Text style={{ color: MW.sub, fontSize: 11, textAlign: "center" }}>
-              Jongerenwerker of manager? Je krijgt toegang via een uitnodigingsmail of QR-code.
+              Jongerenwerker of manager? Je krijgt toegang via een uitnodigingsmail.
             </Text>
-            <TouchableOpacity
-              onPress={onContactForWorkerAccess}
-              activeOpacity={0.8}
-              disabled={busy}
-            >
-              <Text
-                style={{
-                  marginTop: 6,
-                  textAlign: "center",
-                  color: MW.blue,
-                  fontWeight: "600",
-                  fontSize: 12,
-                  textDecorationLine: "underline",
-                }}
-              >
-                Vraag toegang aan bij de beheerder
-              </Text>
+            <TouchableOpacity onPress={onContactForWorkerAccess}>
+              <Text style={{ textAlign: "center", color: MW.blue }}>Vraag toegang aan bij de beheerder</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -253,22 +236,14 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.08)",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-    elevation: 2,
   },
   label: { color: "#5A6572", fontSize: 12, fontWeight: "700" },
   input: {
     marginTop: 6,
-    backgroundColor: "#FFFFFF",
-    color: "#0A0A0A",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.06)",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 12,
   },
   btn: {
     marginTop: 14,
@@ -278,12 +253,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   btnTxt: { color: "#fff", fontWeight: "800" },
-  logo: { width: "100%", height: 120, alignSelf: "center", marginBottom: 20 },
+  logo: { width: "100%", height: 120, marginBottom: 20 },
   forgotTxt: {
     marginTop: 10,
     textAlign: "center",
     color: "#4C80C1",
     fontWeight: "700",
-    fontSize: 13,
   },
 });

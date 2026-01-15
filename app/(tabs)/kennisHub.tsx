@@ -2,9 +2,9 @@
 // app/(tabs)/leeromgeving.tsx
 // DEEL 1/10
 // -------------------------------
-
 import { Feather } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -569,15 +569,22 @@ function UploadModal({
       const safeCat = category.toLowerCase().replace(/\s+/g, "-");
       const filePath = `${safeCat}/${Date.now()}_${picked.name}`;
 
-      const res = await fetch(picked.uri);
-      const blob = await res.blob();
+  
 
-      const { error: upErr } = await supabase.storage
-        .from("knowledge")
-        .upload(filePath, blob, {
-          contentType: picked.mimeType || "application/octet-stream",
-          upsert: false,
-        });
+
+const fileBase64 = await FileSystem.readAsStringAsync(picked.uri, {
+  encoding: "base64",
+});
+
+
+const { error: upErr } = await supabase.storage
+  .from("knowledge")
+  .upload(filePath, fileBase64, {
+    contentType: picked.mimeType || "application/octet-stream",
+    upsert: false,
+    cacheControl: "3600",
+  });
+
 
       if (upErr) {
         console.log("upload error", upErr);
